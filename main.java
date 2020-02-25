@@ -1,6 +1,6 @@
 //-------|---------|---------|---------|---------|---------|---------|---------|
 //
-// UW CSS 527 - Assg3 - KEKs
+// UW CSS 527 - Assg3 - Virtual Hardware Security Module (HSM)
 // main.java
 //
 //-------|---------|---------|---------|---------|---------|---------|---------|
@@ -22,7 +22,7 @@
 // File Description
 //-----------------------------------------------------------------------------|
 //
-// TODO
+// Driver for virtual hardware security module
 
 //-----------------------------------------------------------------------------|
 // Package Files
@@ -101,28 +101,27 @@ public class Main {
 //
 // -------|---------|---------|---------|---------|---------|---------|---------|
 
-  static boolean DEBUG = true;
-  static boolean FASTMODE = true;
-  static boolean LOGGED_IN = false;
-  static String WHO_AM_I = null;
-  static String MY_SECRET = null;
-  static final int NUM_TESTS = 1000000;
-  static final int LOOKAHEAD = 100;
-  static final String KVC_PASSPHRASE  = "test";
+  static boolean DEBUG      = false;
+  static boolean FASTMODE   = false;
+  static boolean LOGGED_IN  = false;
+  static boolean PERSISTENT = true;
+  static String WHO_AM_I   = null;
+  static String MY_SECRET  = null;
+  static final String KVC_PASSPHRASE  = "test"; // Per assignment specification
   static final String SIGNATURE       = "MyNameIsInigoMontoyaYouKilledMyFatherPrepareToDie";
   static final String HSM_SECRET      = "hsmsecret.txt";
   static final String USERDB_IN       = "user_passwordhash.txt";
-  static final String USERDB_OUT      = "user_passwordhash_output.txt";
+  static       String USERDB_OUT      = "user_passwordhash_output.txt";
   static final String KEY_KEKDB_IN    = "keyid_KEK.txt";
-  static final String KEY_KEKDB_OUT   = "keyid_KEK_output.txt";
+  static       String KEY_KEKDB_OUT   = "keyid_KEK_output.txt";
   static final String PUB_KEYSDB_IN   = "publickey_keyID.txt";
-  static final String PUB_KEYSDB_OUT  = "publickey_keyID_output.txt";
+  static       String PUB_KEYSDB_OUT  = "publickey_keyID_output.txt";
   static final String PRIV_KEYSDB_IN  = "privatekey_keyID.txt";
-  static final String PRIV_KEYSDB_OUT = "privatekey_keyID_output.txt";
+  static       String PRIV_KEYSDB_OUT = "privatekey_keyID_output.txt";
   static final String USER_KEYID_IN   = "user_KeyIDs.txt";
-  static final String USER_KEYID_OUT  = "user_KeyIDs_output.txt";
+  static       String USER_KEYID_OUT  = "user_KeyIDs_output.txt";
   static final String KEYID_KVCDB_IN  = "keyid_KVC.txt";
-  static final String KEYID_KVCDB_OUT = "keyid_KVC_output.txt";
+  static       String KEYID_KVCDB_OUT = "keyid_KVC_output.txt";
 
 // -------|---------|---------|---------|---------|---------|---------|---------|
 //
@@ -150,6 +149,14 @@ public class Main {
       }
     }
 
+    if( PERSISTENT ) {
+      USERDB_OUT      = USERDB_IN      ;
+      KEY_KEKDB_OUT   = KEY_KEKDB_IN   ;
+      PUB_KEYSDB_OUT  = PUB_KEYSDB_IN  ;
+      PRIV_KEYSDB_OUT = PRIV_KEYSDB_IN ;
+      USER_KEYID_OUT  = USER_KEYID_IN  ;
+      KEYID_KVCDB_OUT = KEYID_KVCDB_IN ;
+    }
 // -------|---------|---------|---------|
 // TEST
 // -------|---------|---------|---------|
@@ -496,7 +503,9 @@ public class Main {
           idAndPrivkey[0] = WHO_AM_I + ":" + keyHash;
           idAndPrivkey[1] = pvtKey_encrypted;
           addPair( privKeys, idAndPrivkey);
-
+          
+          System.out.println( "RSA keypair generated from password." );
+          System.out.println();
         } // Closing Key Creation case
 
         // -------|---------|---------|---------|
@@ -703,7 +712,7 @@ public class Main {
           // Save cipher to file
           // -------|---------|
           String fileOutput = null;
-          System.out.print( "Enter file output name or leave blank to write to 'ciphertext_output.txt': " );
+          System.out.print( "Enter ciphertext output filename: " );
           if( FASTMODE ) {
             fileOutput = "ciphertext_output.txt";
             System.out.println( fileOutput );
@@ -720,7 +729,7 @@ public class Main {
           // -------|---------|
           // Save signature to file
           // -------|---------|
-          System.out.print( "Enter signature output name or leave blank to write to 'signature_output.txt': " );
+          System.out.print( "Enter signature output filename: " );
           if( FASTMODE ) {
             fileOutput = "signature_output.txt";
             System.out.println( fileOutput );
@@ -774,7 +783,7 @@ public class Main {
         }
 
         else {
-          System.out.println( "Selection not recognized." );
+          System.out.println( "Selection not recognized or invalid (are you logged in?)." );
           System.out.println();
         }
       } // Closing SERVER WHILE LOOP
@@ -1047,7 +1056,9 @@ public class Main {
         return true;
       }
     }
-    System.out.println( "No key match found." );
+    if( DEBUG ) {
+      System.out.println( "No key match found." );
+    }
     return false;
   } // Closing doesContainKey()
 
@@ -1328,13 +1339,13 @@ public class Main {
     System.out.println( "  R - Report the contents of the vHSM" );
     if( LOGGED_IN ) {
       System.out.println( "  C - Create Key" );
-      System.out.println( "  E - Encrypt" );
-      System.out.println( "  S - Sign" );
+      System.out.println( "  E - Encrypt (w/private key)" );
+      System.out.println( "  D - Decrypt (w/public  key)" );
     }
     else if( !LOGGED_IN ) {
       System.out.println( "  C - (Unavailable - Please log in) Create Key" );
-      System.out.println( "  E - (Unavailable - Please log in) Encrypt" );
-      System.out.println( "  S - (Unavailable - Please log in) Sign" );
+      System.out.println( "  E - (Unavailable - Please log in) Encrypt (w/private key)" );
+      System.out.println( "  D - (Unavailable - Please log in) Decrypt (w/public  key)" );
     }
     System.out.println( "  X - eXit" );
     System.out.println( "  SX - Save + eXit" );
