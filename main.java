@@ -520,6 +520,7 @@ public class Main {
           // -------|---------|
           // Check if User has Keys
           // -------|---------|
+          //                         HashSet Key (not value)
           int keyCount = countByKey( keyIDs, WHO_AM_I );
           if( keyCount == 0 ) {
             System.out.println( "No keys registered to you. Please create a key before encrypting." );
@@ -527,12 +528,38 @@ public class Main {
             continue;
           }
           if( DEBUG ) {
-            System.out.println( "Keys found! (" + keyCount + ")" );
+            System.out.println( "(" + keyCount + ") keys found! Continuing..." );
           }
+          // -------|---------|
+          // Prompt user for key ID
+          // -------|---------|
+          if( DEBUG ) {
+            renderHashSetShort( keyIDs, 20 );
+          }
+          System.out.print( "Enter desired key identity number: " );
+          int keyidNumber = userInput.nextInt();
+
+          if( DEBUG ) {
+            System.out.println( "Performing key ID number and username concatenation, key lookup." );
+          }
+
+          String keyIdentifier = WHO_AM_I + ":" + keyidNumber;
+          boolean idLookupResult = doesContainKeyValPair( keyIDs, WHO_AM_I, keyIdentifier );
+
+          if( DEBUG ) {
+            System.out.println( "Key ID number lookup result. Does exist: " + idLookupResult );
+          }
+
+          if( idLookupResult == false ) {
+            System.out.println( "Key ownership cannot be verified by ID. Aborting..." );
+            continue;
+          }
+          System.out.println( "Key ownership verified by ID!" );
+
           // -------|---------|
           // Prompt user for key selection
           // -------|---------|
-          System.out.print( "Enter key password to encrypt with: " );
+          System.out.print( "Enter key password for this ID (" + keyidNumber + "): " );
           String identifier = null;
           if( FASTMODE ) {
             identifier = "foobarbaz";
