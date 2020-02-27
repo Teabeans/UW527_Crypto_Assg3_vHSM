@@ -567,52 +567,12 @@ public class Main {
           else {
             identifier = new String( System.console( ).readPassword( ) );
           }
-          // Calculate hash
-          String hashLookup = null;
-          try {
-            hashLookup = hash_SHA256( identifier );
-          }
-          catch( Exception e ) {
-            e.printStackTrace( System.out );
-          }
-
-          // -------|---------|
-          // Attempt to locate user-specified key
-          // -------|---------|
-          if( DEBUG ) {
-            System.out.println( "Looking up: " + hashLookup );
-          }
-          boolean didFind = doesContainKeyValPair( keyIDs, WHO_AM_I, hashLookup );
-          String userPlusKeyID = null;
-          if( didFind ) {
-            System.out.println( "Key ID found! Concatenating..." );
-            userPlusKeyID = WHO_AM_I + ":" + hashLookup;
-            if( DEBUG ) {
-              System.out.println( "Concatenation complete: " + userPlusKeyID );
-            }
-          }
-          else {
-            System.out.println( "Key not found. Aborting..." );
-            System.out.println();
-            continue;
-          }
+          
           // -------|---------|
           // Acquire Plaintext
           // -------|---------|
-          String fileInput = "plaintext.txt";
-          System.out.print( "Enter text to encrypt or leave blank to read from 'plaintext.txt': " );
-          String plaintext = null;
-          if( FASTMODE ) {
-            plaintext = "";
-            System.out.println( fileInput );
-          }
-          else {
-            plaintext = userInput.next();
-          }
-          // If the user provides no input, read in from file
-          if( plaintext.equals("") ) {
-            plaintext = readFile( fileInput );
-          }
+          System.out.println( "Reading plaintext from file: 'plaintext.txt'... " );
+          String plaintext = readFile( "plaintext.txt" );
 
           if( DEBUG ) {
             System.out.println( "Plaintext received: " );
@@ -622,9 +582,29 @@ public class Main {
           // -------|---------|
           // Acquire Key using lookup
           // -------|---------|
-          String kekFromDB = getValue( idKEKDB,  userPlusKeyID );
-          String kvcFromDB = getValue( kvcDB,    userPlusKeyID );
-          String keyFromDB = getValue( privKeys, userPlusKeyID );
+          String kekFromDB = getValue( idKEKDB, keyIdentifier );
+
+          // -------|---------|
+          // Calculate Key Encryption Key (KEK)
+          // -------|---------|
+          // KEK == (HSMSecretKey) XOR (SHA256(KeyPassword))
+          String sha256KeyPass = null;
+          try {
+            sha256KeyPass = hash_SHA256( identifier );
+          }
+          catch( Exception e ) {
+            e.printStackTrace( System.out );
+          }
+          String keyEncryptionKey = xorHex( sha256KeyPass, MY_SECRET );
+          boolean kekCompare = kekFromDB.equals( keyEncryptionKey );
+          if( DEBUG ) {
+            System.out.println( "KEK calculated! Comparing... " );
+            System.out.println( "KEK from DB == KEK calculated here: " + kekCompare );
+          }
+
+
+          String kvcFromDB = getValue( kvcDB,    keyIdentifier );
+          String keyFromDB = getValue( privKeys, keyIdentifier );
 
           if( DEBUG ) {
             System.out.println( "KVC and Encrypted Key acquired: " );
@@ -704,7 +684,7 @@ public class Main {
           // Decrypt ciphertext check
           // -------|---------|
           // Get public key from DB
-          keyFromDB = getValue( pubKeys, userPlusKeyID );
+          keyFromDB = getValue( pubKeys, keyIdentifier );
           byte[] pubKeySeed = Base64.getDecoder( ).decode( keyFromDB );
           PublicKey publicKey = KeyFactory.getInstance( "RSA" ).generatePublic( new X509EncodedKeySpec( pubKeySeed ) );
           // Decipher
