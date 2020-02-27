@@ -24,32 +24,37 @@ cat hsmsecret.txt
 echo ""
 echo ""
 
-echo "user_passwordhash_output.txt :"
-cat user_passwordhash_output.txt
+echo "user_passwordhash.txt :"
+cat user_passwordhash.txt
 echo ""
 echo ""
 
-echo "user_KeyIDs_output.txt :"
-cat user_KeyIDs_output.txt
+echo "user_KeyIDs.txt :"
+cat user_KeyIDs.txt
 echo ""
 echo ""
 
-echo "publickey_keyID_output.txt :"
-cat publickey_keyID_output.txt
+echo "keycount.txt :"
+cat keycount.txt
 echo ""
 echo ""
 
-echo "privatekey_keyID_output.txt :"
-cat privatekey_keyID_output.txt
+echo "publickey_keyID.txt :"
+cat publickey_keyID.txt
 echo ""
 echo ""
 
-echo "keyid_KEK_output.txt :"
-cat keyid_KEK_output.txt
+echo "privatekey_keyID.txt :"
+cat privatekey_keyID.txt
 echo ""
 echo ""
 
-echo "keyid_KVC_output.txt :"
-cat keyid_KVC_output.txt
+echo "keyid_KEK.txt :"
+cat keyid_KEK.txt
+echo ""
+echo ""
+
+echo "keyid_KVC.txt :"
+cat keyid_KVC.txt
 echo ""
 echo ""

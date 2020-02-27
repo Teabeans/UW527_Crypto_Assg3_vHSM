@@ -101,12 +101,13 @@ public class Main {
 //
 // -------|---------|---------|---------|---------|---------|---------|---------|
 
-  static boolean DEBUG      = false;
+  static boolean DEBUG      = true;
   static boolean FASTMODE   = false;
   static boolean LOGGED_IN  = false;
   static boolean PERSISTENT = true;
   static String WHO_AM_I   = null;
   static String MY_SECRET  = null;
+  static final String KEY_COUNT       = "keycount.txt";
   static final String KVC_PASSPHRASE  = "test"; // Per assignment specification
   static final String SIGNATURE       = "MyNameIsInigoMontoyaYouKilledMyFatherPrepareToDie";
   static final String HSM_SECRET      = "hsmsecret.txt";
@@ -202,6 +203,7 @@ public class Main {
       HashSet<String[]> keyIDs   = loadFromFile( USER_KEYID_IN  );
       HashSet<String[]> kvcDB    = loadFromFile( KEYID_KVCDB_IN );
       MY_SECRET = loadSecret( HSM_SECRET );
+      int CURR_KEYCOUNT = loadIntFromFile( KEY_COUNT );
 
       // Auto-login
       if( FASTMODE ) {
@@ -217,20 +219,22 @@ public class Main {
       while( isRunning ) {
         renderOptions();
         String choice = userInput.next();
+        System.out.println();
 
         // -------|---------|---------|---------|
         // NEW USER ACCOUNT CASE
         // -------|---------|---------|---------|
         if( choice.equals( "N" ) ) {
-          System.out.print( "NEW USERNAME: " );
+          System.out.println( "---NEW USER SELECTED---" );
+          System.out.print( "Enter new username: " );
           String username = userInput.next();
           // Check if user is already in the database
           if( doesContainKey( userDB, username ) ) {
             System.out.println( "Username unavailable. Aborting..." );
-            break;
+            continue;
           }
-          System.out.println( "Username available! Select password." );
-          System.out.print( "PASSWORD: ");
+          System.out.println( "Username available!" );
+          System.out.print( " Select password: ");
           String password = new String( System.console( ).readPassword( ) );
           String hash = null;
           try {
@@ -242,7 +246,7 @@ public class Main {
           if( DEBUG ) {
             System.out.println( "Password: " + password + " => " + hash );
           }
-
+          System.out.println( "Password accepted! Hashing and saving..." );
           String[] pair = new String[2];
           pair[0] = username;
           pair[1] = hash;
@@ -250,17 +254,19 @@ public class Main {
           if( DEBUG ) {
             System.out.println( "Add result: " + addResult );
             renderHashSet( userDB );
-            System.out.println();
           }
+          System.out.println( "Account '" + username + "' created!" );
+          System.out.println();
         } // Closing new user account case
 
         // -------|---------|---------|---------|
         // LOGIN CASE
         // -------|---------|---------|---------|
         else if( choice.equals( "L" ) ) {
-          System.out.print( "USERNAME: " );
+          System.out.println( "---LOGIN SELECTED---" );
+          System.out.print( "Enter username: " );
           String username = userInput.next();
-          System.out.print( "PASSWORD: " );
+          System.out.print( "Enter password: " );
           String password = new String( System.console( ).readPassword( ) );
           // -------|---------|
           // Hash the password
@@ -297,34 +303,37 @@ public class Main {
         // REPORT CASE
         // -------|---------|---------|---------|
         else if( choice.equals( "R" ) ) {
-          System.out.println( "Reporting state of vHSM..." );
-          System.out.println( "Logged in   : " + LOGGED_IN );
-          System.out.println( "Current User: " + WHO_AM_I  );
-          System.out.println( "vHSM Secret : " + MY_SECRET );
+          System.out.println( "---REPORT SELECTED---");
+          System.out.println( "Reporting internal state of vHSM..." );
+          System.out.println( "Logged in   : " + LOGGED_IN     );
+          System.out.println( "Current User: " + WHO_AM_I      );
+          System.out.println( "vHSM Secret : " + MY_SECRET     );
+          System.out.println( "Current Key : " + CURR_KEYCOUNT );
+
           System.out.println();
 
           System.out.println( "USERS:" );
-          renderHashSet( userDB );
+          renderHashSetShort( userDB, 20 );
           System.out.println();
 
           System.out.println( "KEY IDS:" );
-          renderHashSet( keyIDs );
+          renderHashSetShort( keyIDs, 20 );
           System.out.println();
 
           System.out.println( "KEY ENCRYPTION KEYS (KEKS):" );
-          renderHashSet( idKEKDB );
+          renderHashSetShort( idKEKDB, 20 );
           System.out.println();
 
           System.out.println( "KEY VERIFICATION CODES (KVCS):" );
-          renderHashSet( kvcDB );
+          renderHashSetShort( kvcDB, 20 );
           System.out.println();
 
           System.out.println( "PUBLIC KEYS:" );
-          renderHashSet( pubKeys );
+          renderHashSetShort( pubKeys, 20 );
           System.out.println();
 
           System.out.println( "PRIVATE KEYS:" );
-          renderHashSet( privKeys );
+          renderHashSetShort( privKeys, 20 );
           System.out.println();
         } // Closing HSM Report case
 
@@ -332,50 +341,42 @@ public class Main {
         // CREATE KEY CASE
         // -------|---------|---------|---------|
         else if( choice.equals( "C" ) && LOGGED_IN ) {
+          System.out.println( "---CREATE KEY SELECTED---" );
+          // -------|---------|
+          // Generate Key ID number and add to database
+          // -------|---------|
+          // In form: 'USERNAME:KEYNUMBER'
+          String keyID = calcKeyID( WHO_AM_I, CURR_KEYCOUNT );
+
+          if( DEBUG ) {
+            System.out.println( "KeyID (" + keyID + ") created. Adding to keyID database..." );
+          }
+          // -------|---------|
+          // Add ID to list of known keys
+          // -------|---------|
+          String[] userKeyPair = new String[2];
+          userKeyPair[0] = WHO_AM_I;
+          userKeyPair[1] = keyID;
+          addPair( keyIDs, userKeyPair );
+          CURR_KEYCOUNT++;
+
           // -------|---------|
           // Acquire key password
           // -------|---------|
-          System.out.print( "KEY PASSWORD: " );
+          System.out.print( "Enter Key Password: " );
           String keypass = null;
           if( FASTMODE ) {
             keypass = "foobarbaz";
           }
           else {
-           keypass = new String( System.console( ).readPassword( ) );
+            keypass = new String( System.console( ).readPassword( ) );
           }
 
           if( DEBUG ) {
             System.out.println( "Input acquired:" );
-            System.out.println( "  USER: " + WHO_AM_I );
-            System.out.println( "  PASS: " + keypass );
-          }
-          // -------|---------|
-          // Calculate Key ID
-          // -------|---------|
-          // In form: 'USERNAME SHA256HASHOFPASSWORD'
-          String keyID = calcKeyID( WHO_AM_I, keypass );
-          // Trim the username back off the keyID
-          String keyHash = keyID.replaceFirst( (WHO_AM_I + " "), "" );
-
-          // -------|---------|
-          // Pre-existing keypassword check
-          // -------|---------|
-          if( doesContainKeyValPair( keyIDs, WHO_AM_I, keyHash ) ) {
-            System.out.println( "Pre-existing Key ID found. Aborting..." );
-            System.out.println();
-            continue; // Jump back to top of while loop
-          }
-          else {
-            if( DEBUG ) {
-              System.out.println( "Pre-existing Key ID not found. Adding to keyID database..." );
-            }
-            // -------|---------|
-            // Not found, so add ID to list of known keys
-            // -------|---------|
-            String[] userKeyPair = new String[2];
-            userKeyPair[0] = WHO_AM_I;
-            userKeyPair[1] = keyHash;
-            addPair( keyIDs, userKeyPair );
+            System.out.println( "  USER   : " + WHO_AM_I );
+            System.out.println( "  KEY ID#: " + CURR_KEYCOUNT );
+            System.out.println( "  PASS   : " + keypass );
           }
 
           // -------|---------|
@@ -434,16 +435,18 @@ public class Main {
           // -------|---------|
           // Store encrypted KEK to server
           // -------|---------|
-          String[] idAndKEK = new String[2];
-          idAndKEK[0] = WHO_AM_I + ":" + keyHash; // Key ID
-          idAndKEK[1] = keyEncryptionKey;
-          addPair( idKEKDB, idAndKEK );
+          if( DEBUG ) {
+            String[] idAndKEK = new String[2];
+            idAndKEK[0] = keyID; // Key ID
+            idAndKEK[1] = keyEncryptionKey;
+            addPair( idKEKDB, idAndKEK );
+          }
 
           // -------|---------|
           // Store unencrypted pubKey to server
           // -------|---------|
           String[] idAndPubkey = new String[2];
-          idAndPubkey[0] = WHO_AM_I + ":" + keyHash;
+          idAndPubkey[0] = keyID;
           idAndPubkey[1] = pubKey_64;
           addPair( pubKeys, idAndPubkey);
 
@@ -460,7 +463,7 @@ public class Main {
 
           // Store the KVC to the database
           String[] idAndKVC = new String[2];
-          idAndKVC[0] = WHO_AM_I + ":" + keyHash;
+          idAndKVC[0] = keyID;
           idAndKVC[1] = kekVerificationCode;
           addPair( kvcDB, idAndKVC );
 
@@ -500,7 +503,7 @@ public class Main {
           // Store encrypted privKey to server
           // -------|---------|
           String[] idAndPrivkey = new String[2];
-          idAndPrivkey[0] = WHO_AM_I + ":" + keyHash;
+          idAndPrivkey[0] = keyID;
           idAndPrivkey[1] = pvtKey_encrypted;
           addPair( privKeys, idAndPrivkey);
           
@@ -749,17 +752,28 @@ public class Main {
         // -------|---------|---------|---------|
         else if( choice.equals( "D" ) && LOGGED_IN ) {
           System.out.println( "Decryption with PUBLIC key (e.g. - broadcast from known sender)" );
-
-
-
+          System.out.println( "No decryption case per assignment specification." );
+        } // Closing Decryption Case
 
 // -------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|-------|
 //
 // UNDER CONSTRUCTION ! UNDER CONSTRUCTION ! UNDER CONSTRUCTION ! UNDER CONSTRUCTION ! UNDER CONSTRUCTION ! UNDER CONSTRUCTION ! UNDER CONSTRUCTION !
 //
 // -------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|-------|
-
-        } // Closing Decryption Case
+        // -------|---------|---------|---------|
+        // TARE CASE
+        // -------|---------|---------|---------|
+        else if( choice.equals( "T" ) ) {
+          System.out.println( "Taring. Dumping databases..." );
+          System.out.println();
+          CURR_KEYCOUNT = 0;
+          obliviate( userDB );
+          obliviate( idKEKDB );
+          obliviate( pubKeys );
+          obliviate( privKeys );
+          obliviate( keyIDs );
+          obliviate( kvcDB );
+        }
 
         // -------|---------|---------|---------|
         // EXIT CASE
@@ -773,6 +787,7 @@ public class Main {
         // -------|---------|---------|---------|
         else if( choice.equals( "SX" ) ) {
           System.out.println( "Saving state and exiting..." );
+          writeIntToFile( CURR_KEYCOUNT, KEY_COUNT );
           writeToFile( userDB,   USERDB_OUT      );
           writeToFile( idKEKDB,  KEY_KEKDB_OUT   );
           writeToFile( pubKeys,  PUB_KEYSDB_OUT  );
@@ -972,16 +987,9 @@ public class Main {
 //-------|---------|---------|---------|
 // calcKeyID()
 //-------|---------|---------|---------|
-  public static String calcKeyID( String username, String keypass ) {
-    String passhash = null;
-    try {
-      passhash = hash_SHA256( keypass );
-    }
-    catch (Exception e) {
-      e.printStackTrace(System.out);
-    }
-    String keyID = WHO_AM_I + " " + passhash;
-    return keyID;    
+  public static String calcKeyID( String username, int idNumber ) {
+    String keyID = username + ":" + idNumber;
+    return keyID;
   } // Closing calcKeyID()
 
   
@@ -992,7 +1000,14 @@ public class Main {
 //-------|---------|---------|---------|---------|---------|---------|---------|
 
 //-------|---------|---------|---------|
-// addPair
+// obliviate()
+//-------|---------|---------|---------|
+  public static void obliviate( HashSet<String[]> database ) {
+    database.clear();
+  } // Closing obliviate()
+
+//-------|---------|---------|---------|
+// addPair()
 //-------|---------|---------|---------|
 // Attempts to add a key:value pair to a HashSet, but only if the Key is not already present
 // Aborts if key is found
@@ -1110,9 +1125,46 @@ public class Main {
 
 //-------|---------|---------|---------|---------|---------|---------|---------|
 //
-// LOADERS
+// READERS/LOADERS
 //
 //-------|---------|---------|---------|---------|---------|---------|---------|
+
+//-------|---------|---------|---------|
+// loadIntFromFile()
+//-------|---------|---------|---------|
+  public static int loadIntFromFile( String filename ) {
+    int retInt = 0;
+    File f = new File( filename );
+    Scanner fileReader = null;
+    try {
+      fileReader = new Scanner( f );
+    }
+    catch (FileNotFoundException e) {
+      e.printStackTrace();
+    }
+    retInt = fileReader.nextInt();
+    return retInt;
+  } // Closing loadIntFromFile()
+
+//-------|---------|---------|---------|
+// writeIntToFile()
+//-------|---------|---------|---------|  
+// Takes a int and writes to file
+  public static boolean writeIntToFile( int number, String filename ) {    
+    FileWriter fw = null;
+    BufferedWriter writer = null;
+    try {
+      fw = new FileWriter( filename );
+      writer = new BufferedWriter( fw );
+      writer.write( ("" + number) );
+      writer.close();
+      return true;
+    }
+    catch (IOException e) {
+      e.printStackTrace();
+      return false;
+    }
+  } // Closing writeIntToFile()
 
 //-------|---------|---------|---------|
 // readFile
@@ -1159,6 +1211,7 @@ public class Main {
       return false;
     }
   } // Closing writeStringToFile()
+
 //-------|---------|---------|---------|
 // writeToFile
 //-------|---------|---------|---------|  
@@ -1330,6 +1383,37 @@ public class Main {
   } // Closing renderHashSet()
 
 //-------|---------|---------|---------|
+// renderHashSetShort()
+//-------|---------|---------|---------|
+// Writes a [Key:Value] HashSet to console in no particular order
+  public static void renderHashSetShort( HashSet<String[]> h, int length ) {
+    Iterator<String[]> iter = h.iterator();
+    while( iter.hasNext( ) ) {
+      String[] currEntry = iter.next();
+      if( currEntry[0].length() >= length ) {
+        for( int i = 0 ; i < length ; i++ ) {
+          System.out.print( currEntry[0].charAt( i ) );
+        }
+        System.out.print( "[...]" );
+      }
+      else {
+        System.out.print( currEntry[0] );
+      }
+      System.out.print( " : " );
+      if( currEntry[1].length() >= length ) {
+        for( int i = 0 ; i < length ; i++ ) {
+          System.out.print( currEntry[1].charAt( i ) );
+        }
+        System.out.print( "[...]" );
+      }
+      else {
+        System.out.print( currEntry[1] );
+      }
+      System.out.println();
+    }
+  } // Closing renderHashSet()
+
+//-------|---------|---------|---------|
 // renderOptions()
 //-------|---------|---------|---------|
   public static void renderOptions() {
@@ -1347,6 +1431,7 @@ public class Main {
       System.out.println( "  E - (Unavailable - Please log in) Encrypt (w/private key)" );
       System.out.println( "  D - (Unavailable - Please log in) Decrypt (w/public  key)" );
     }
+    System.out.println( "  T - Tare HSM (drop tables)" );
     System.out.println( "  X - eXit" );
     System.out.println( "  SX - Save + eXit" );
     System.out.print( "Please select an option: " );
