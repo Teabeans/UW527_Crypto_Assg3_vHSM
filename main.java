@@ -101,7 +101,7 @@ public class Main {
 //
 // -------|---------|---------|---------|---------|---------|---------|---------|
 
-  static boolean DEBUG      = true;
+  static boolean DEBUG      = false;
   static boolean FASTMODE   = false;
   static boolean LOGGED_IN  = false;
   static boolean PERSISTENT = true;
@@ -249,7 +249,7 @@ public class Main {
             System.out.println( "Add result: " + addResult );
             renderHashSet( userDB );
           }
-          System.out.println( "\u001b[32;1mAccount '" + username + "' created!\u001b[0m" );
+          System.out.println( "\u001b[32;1m\u001b[4mAccount '" + username + "' created!\u001b[0m" );
           System.out.println();
         } // Closing new user account case
 
@@ -262,6 +262,8 @@ public class Main {
           String username = userInput.next();
           System.out.print( "Enter password: " );
           String password = new String( System.console( ).readPassword( ) );
+          System.out.println();
+
           // -------|---------|
           // Hash the password
           // -------|---------|
@@ -279,13 +281,17 @@ public class Main {
           // Check credentials against database
           // -------|---------|
           if( getValue( userDB, username ).equals( hash ) ) {
-            System.out.println( "Username:Password accepted. \u001b[32;1mLogin successful\u001b[0m." );
+            if( DEBUG ) {
+              System.out.println( "Username:Password accepted." );
+            }
+            System.out.println( "\u001b[32;1m\u001b[4mLogin successful!\u001b[0m" );
             System.out.println();
             LOGGED_IN = true;
             WHO_AM_I = username;
           }
           else {
-            System.out.println( "Username:Password not found. \u001b[31;1mLogin denied\u001b[0m. Logging out..." );
+            System.out.println( "Username:Password not found.");
+            System.out.println( "\u001b[31;1m\u001b[4mLogin denied.\u001b[0m Logging out..." );
             System.out.println();
             LOGGED_IN = false;
             WHO_AM_I = null;
@@ -298,36 +304,42 @@ public class Main {
         // -------|---------|---------|---------|
         else if( choice.equals( "R" ) ) {
           System.out.println( "---REPORT SELECTED---");
-          System.out.println( "Reporting internal state of vHSM..." );
-          System.out.println( "Logged in   : " + LOGGED_IN     );
-          System.out.println( "Current User: " + WHO_AM_I      );
-          System.out.println( "vHSM Secret : " + MY_SECRET     );
-          System.out.println( "Current Key : " + CURR_KEYCOUNT );
+          System.out.println();
+          if( DEBUG ) {
+            System.out.println( "Reporting internal state of vHSM..." );            
+          }
+          System.out.println( "\u001b[33;1mLogged in   : \u001b[0m" + LOGGED_IN     );
+          System.out.println( "\u001b[33;1mCurrent User: \u001b[0m" + WHO_AM_I      );
+          System.out.println( "\u001b[33;1mvHSM Secret : \u001b[0m" + MY_SECRET     );
+          System.out.println( "\u001b[33;1mCurrent Key : \u001b[0m" + CURR_KEYCOUNT );
 
           System.out.println();
 
-          System.out.println( "\u001b[33;1mUSER       : PASSWORD HASH \u001b[0m" );
+          System.out.println( "\u001b[33;1mUSER        : LOGIN PASSWORD HASH \u001b[0m" );
           renderHashSetShort( userDB, 61 );
           System.out.println();
 
-          System.out.println( "\u001b[33;1mOWNER      : KEY ID \u001b[0m" );
-          renderHashSetShort( keyIDs, 62 );
+          System.out.println( "\u001b[33;1mOWNER       : KEY ID \u001b[0m" );
+          renderHashSetShort( keyIDs, 61 );
           System.out.println();
 
-          System.out.println( "\u001b[33;1mKEY ID     : KEY ENCRYPTION KEY (KEK) \u001b[0m" );
-          renderHashSetShort( idKEKDB, 62 );
+          System.out.println( "\u001b[33;1mKEY ID      : KEY ENCRYPTION KEY (KEK) \u001b[0m" );
+          renderHashSetShort( idKEKDB, 61 );
           System.out.println();
 
-          System.out.println( "\u001b[33;1mKEY ID     : KEY VERIFICATION CODE (KVC) \u001b[0m" );
-          renderHashSetShort( kvcDB, 62 );
+          System.out.println( "\u001b[33;1mKEY ID      : KEY VERIFICATION CODE (KVC) \u001b[0m" );
+          renderHashSetShort( kvcDB, 61 );
           System.out.println();
 
-          System.out.println( "\u001b[33;1mKEY ID     : PUBLIC KEY \u001b[0m" );
-          renderHashSetShort( pubKeys, 62 );
+          System.out.println( "\u001b[33;1mKEY ID      : PUBLIC KEY \u001b[0m" );
+          renderHashSetShort( pubKeys, 61 );
           System.out.println();
 
-          System.out.println( "\u001b[33;1mKEY ID     : ENCRYPTED PRIVATE KEY \u001b[0m" );
-          renderHashSetShort( privKeys, 62 );
+          System.out.println( "\u001b[33;1mKEY ID      : ENCRYPTED PRIVATE KEY \u001b[0m" );
+          renderHashSetShort( privKeys, 61 );
+          System.out.println();
+
+          System.out.println( "\u001b[32;1m\u001b[4mReport completed!\u001b[0m" );
           System.out.println();
         } // Closing HSM Report case
 
@@ -336,6 +348,7 @@ public class Main {
         // -------|---------|---------|---------|
         else if( choice.equals( "C" ) && LOGGED_IN ) {
           System.out.println( "---CREATE KEY SELECTED---" );
+          System.out.println();
 
           if( DEBUG ) {
             System.out.println( "|---------|---------|---------|---------|" );
@@ -372,13 +385,8 @@ public class Main {
             System.out.println( "|---------|---------|---------|---------|" );
           }
           System.out.print( "\u001b[37;1mEnter Key Password: \u001b[0m" );
-          String keypass = null;
-          if( FASTMODE ) {
-            keypass = "foobarbaz";
-          }
-          else {
-            keypass = new String( System.console( ).readPassword( ) );
-          }
+          String keypass = new String( System.console( ).readPassword( ) );
+          System.out.println();
 
           if( DEBUG ) {
             System.out.println( "Key Password input acquired:" );
@@ -436,13 +444,13 @@ public class Main {
           }
 
           if( DEBUG ) {
-            System.out.print( String.format( "'%-13s'" , keypass ) );
+            System.out.print( String.format( "'%1$-13s'" , keypass ) );
             System.out.print( " ===[SHA-256]==> " );
             System.out.println( String.format( "%1$.44s[...]" , sha256KeyPass ) );
             System.out.println();
             System.out.println( "Attempting XOR of: " );
-            System.out.println( "  HSM Secret     : " + MY_SECRET );
-            System.out.println( "  Password Hash  : " + sha256KeyPass );
+            System.out.println( String.format("  HSM Secret     : %1$.57s[...]", MY_SECRET     ) );
+            System.out.println( String.format("  Password Hash  : %1$.57s[...]", sha256KeyPass ) );
             System.out.println();
           }
 
@@ -450,7 +458,7 @@ public class Main {
 
           if( DEBUG ) {
             System.out.println( "XOR Result (KEK): " );
-            System.out.println( "  Key-Encrypt-Key: " + keyEncryptionKey );
+            System.out.println( String.format("  Key-Encrypt-Key: %1$.57s[...]", keyEncryptionKey ) );
             System.out.println();
           }
 
@@ -466,65 +474,95 @@ public class Main {
           addPair( idKEKDB, idAndKEK );
 
           if( DEBUG ) {
-            System.out.println( "KeyID : KEK stored to database." );
+            System.out.println( "(KeyID : KEK) stored to database." );
             System.out.println();
           }
 
-          // -------|---------|
-          // Store unencrypted pubKey to server
-          // -------|---------|
+          if( DEBUG ) {
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Store Key.Public to server" );
+            System.out.println( "|---------|---------|---------|---------|" );
+          }
           String[] idAndPubkey = new String[2];
           idAndPubkey[0] = keyID;
           idAndPubkey[1] = pubKey_64;
           addPair( pubKeys, idAndPubkey);
 
-          // -------|---------|
-          // Encrypt RSA Private with AES
-          // -------|---------|                  plaintext  key
+          if( DEBUG ) {
+            System.out.println( "(KeyID : Key.Public) stored to database." );
+            System.out.println();
+          }
+
+          if( DEBUG ) {
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| AES Encrypt Key.Private" );
+            System.out.println( "|---------|---------|---------|---------|" );
+          }
+          //                                     plaintext  key
           String pvtKey_encrypted = encrypt_AES( pvtKey_64, keyEncryptionKey );
 
-          // -------|---------|
-          // Calculate Key Verification Code (KVC)
-          // -------|---------|
+          if( DEBUG ) {
+            System.out.println( "Key.Private encrypted to encKey.Private." );
+            System.out.println();
+          }
+
+          if( DEBUG ) {
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Calculate Key Verification Code (KVC)" );
+            System.out.println( "|---------|---------|---------|---------|" );
+          }
           String plaintext = KVC_PASSPHRASE;
+          if( DEBUG ) {
+            System.out.println( "KVC passphrase : " + plaintext );
+          }
           String kekVerificationCode = encrypt_AES( plaintext, keyEncryptionKey );
 
-          // Store the KVC to the database
+          if( DEBUG ) {
+            System.out.println( "Storing the KVC to the database..." );
+            System.out.println( "  Key ID : " + keyID );
+            System.out.println( "  KVC    : " + kekVerificationCode );
+          }
+
           String[] idAndKVC = new String[2];
           idAndKVC[0] = keyID;
           idAndKVC[1] = kekVerificationCode;
           addPair( kvcDB, idAndKVC );
 
           if( DEBUG ) {
-            System.out.println( "Plaintext : " + plaintext );
-            System.out.println( "Ciphertext: " + kekVerificationCode );
+            System.out.println( "(KeyID : KVC) stored to the database." );
+            System.out.println();
+          }
+
+          if( DEBUG ) {
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Testing KVC Roundtrip" );
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "  Validation text: " + plaintext );
+            System.out.println( "  KVC            : " + kekVerificationCode );
             String roundTrip = decrypt_AES( kekVerificationCode, keyEncryptionKey );
-            System.out.println( "Roundtrip : " + roundTrip );
+            System.out.println( "  Roundtrip      : " + roundTrip );
+            System.out.println( "  Validation     : " + (plaintext.equals( roundTrip ) ) );
             System.out.println();
           }
 
           if( DEBUG ) {
-            System.out.println( "Testing roundtrip of RSA private key: " );
-            System.out.println( "  Pre : " + pvtKey_64 );
-            System.out.println( "  Mid : " + pvtKey_encrypted );
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Testing Key.Private Roundtrip" );
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "  PRE : " + String.format("%1$.68s[...]", pvtKey_64 ) );
+            System.out.println( "  MID : " + String.format("%1$.68s[...]", pvtKey_encrypted ) );
             String pvtKey_roundtrip = decrypt_AES( pvtKey_encrypted, keyEncryptionKey );
-            System.out.println( "  Post: " + pvtKey_roundtrip );
+            System.out.println( "  POST: " + String.format("%1$.68s[...]", pvtKey_roundtrip ) );
             System.out.println();
           }
 
-          // -------|---------|
-          // Secure Private key in the HSM DB
-          // -------|---------|
           if( DEBUG ) {
-            System.out.println( "Ready to secure key to database:" );
-            System.out.println( "  User             : " + WHO_AM_I            );
-            System.out.println( "  KeyID            : " + keyID               );
-            System.out.println( "  RSAPub           : " + pub.getEncoded( )   );
-            System.out.println( "  RSAPriv          : " + pvt.getEncoded( )   );
-            System.out.println( "  KEK              : " + keyEncryptionKey    );
-            System.out.println( "  RSAPriv_Encrypted: " + pvtKey_encrypted    );
-            System.out.println( "  KVC              : " + kekVerificationCode );
-            System.out.println();
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Secure encKey.Private in the DB" );
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "Storing the encKey.Private to the database..." );
+            System.out.println( "  Key ID        : " + keyID );
+            System.out.println( "  encKey.Private: " + String.format("%1$.58s[...]", pvtKey_encrypted ) );
           }
 
           // -------|---------|
@@ -534,8 +572,14 @@ public class Main {
           idAndPrivkey[0] = keyID;
           idAndPrivkey[1] = pvtKey_encrypted;
           addPair( privKeys, idAndPrivkey);
+
+          if( DEBUG ) {
+            System.out.println( "(KeyID : encKey.Private) stored to database." );
+            System.out.println();
+          }
+
           
-          System.out.println( "RSA keypair generated from password." );
+          System.out.println( "\u001b[32;1m\u001b[4mRSA keypair generated!\u001b[0m" );
           System.out.println();
         } // Closing Key Creation case
 
@@ -543,32 +587,41 @@ public class Main {
         // ENCRYPT CASE
         // -------|---------|---------|---------|
         else if( choice.equals( "E" ) && LOGGED_IN ) {
-          System.out.println( "Encryption with PRIVATE key selected (authenticity, no confidentiality)" );
+          System.out.println( "---ENCRYPT SELECTED---");
+          System.out.println( );
 
-          // -------|---------|
-          // Check if User has Keys
-          // -------|---------|
+          if( DEBUG ) {
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Confirm User has Key(s)" );
+            System.out.println( "|---------|---------|---------|---------|" );
+          }
           //                         HashSet Key (not value)
           int keyCount = countByKey( keyIDs, WHO_AM_I );
           if( keyCount == 0 ) {
-            System.out.println( "No keys registered to you. Please create a key before encrypting." );
+            System.out.println( "\u001b[33;1mNo keys registered to you.\u001b[0m Please create a key before encrypting." );
             System.out.println();
             continue;
           }
           if( DEBUG ) {
             System.out.println( "(" + keyCount + ") keys found! Continuing..." );
           }
+
+          if( DEBUG ) {
+            renderHashSetShort( keyIDs, 20 );
+            System.out.println();
+          }
+
           // -------|---------|
           // Prompt user for key ID
           // -------|---------|
-          if( DEBUG ) {
-            renderHashSetShort( keyIDs, 20 );
-          }
-          System.out.print( "Enter desired key identity number: " );
+          System.out.print( "\u001b[37;1mEnter desired Key ID Number: \u001b[0m" );
           int keyidNumber = userInput.nextInt();
+          System.out.println();
 
           if( DEBUG ) {
-            System.out.println( "Performing key ID number and username concatenation, key lookup." );
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Perform Key ID concatenation and Lookup" );
+            System.out.println( "|---------|---------|---------|---------|" );
           }
 
           String keyIdentifier = WHO_AM_I + ":" + keyidNumber;
@@ -579,42 +632,32 @@ public class Main {
           }
 
           if( idLookupResult == false ) {
-            System.out.println( "Key ownership cannot be verified by ID. Aborting..." );
+            System.out.println( "Key ownership cannot be verified by ID (is this key yours?)." );
+            System.out.println( "\u001b[31;1m\u001b[4mAborting key lookup.\u001b[0m" );
+            System.out.println();
             continue;
           }
-          System.out.println( "Key ownership verified by ID!" );
+          System.out.println( "\u001b[32;1mKey ownership verified by ID!\u001b[0m" );
+          System.out.println();
 
           // -------|---------|
           // Prompt user for key selection
           // -------|---------|
-          System.out.print( "Enter key password for this ID (" + keyidNumber + "): " );
+          System.out.print( "\u001b[37;1mEnter Key Password for this Key ID (" + keyidNumber + "): \u001b[0m" );
           String identifier = null;
-          if( FASTMODE ) {
-            identifier = "foobarbaz";
-          }
-          else {
-            identifier = new String( System.console( ).readPassword( ) );
-          }
-          
-          // -------|---------|
-          // Acquire Plaintext
-          // -------|---------|
-          System.out.println( "Reading plaintext from file: 'plaintext.txt'... " );
-          String plaintext = readFile( "plaintext.txt" );
-
-          if( DEBUG ) {
-            System.out.println( "Plaintext received: " );
-            System.out.println( plaintext );
-          }
+          identifier = new String( System.console( ).readPassword( ) );
+          System.out.println();
 
           // -------|---------|
           // Acquire Key using lookup
           // -------|---------|
           String kekFromDB = getValue( idKEKDB, keyIdentifier );
 
-          // -------|---------|
-          // Calculate Key Encryption Key (KEK)
-          // -------|---------|
+          if( DEBUG ) {
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Calculate KEK from Password" );
+            System.out.println( "|---------|---------|---------|---------|" );
+          }
           // KEK == (HSMSecretKey) XOR (SHA256(KeyPassword))
           String sha256KeyPass = null;
           try {
@@ -627,57 +670,71 @@ public class Main {
           boolean kekCompare = kekFromDB.equals( keyEncryptionKey );
           if( DEBUG ) {
             System.out.println( "KEK calculated! Comparing... " );
-            System.out.println( "KEK from DB == KEK calculated here: " + kekCompare );
+            System.out.println( "KEK from DB   : " + kekFromDB );
+            System.out.println( "KEK calculated: " + keyEncryptionKey);
+            System.out.println( "KEK from DB vs. KEK calculated: " + kekCompare );
+            System.out.println();
           }
-
-
-          String kvcFromDB = getValue( kvcDB,    keyIdentifier );
-          String keyFromDB = getValue( privKeys, keyIdentifier );
 
           if( DEBUG ) {
-            System.out.println( "KVC and Encrypted Key acquired: " );
-            System.out.println( "KVC: ");
-            System.out.println( kvcFromDB );
-            System.out.println();
-            System.out.println( "Private Key (Encrypted): ");
-            System.out.println( keyFromDB );
-            System.out.println();
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Confirm KVC" );
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "Acquiring KVC from database... ");
           }
 
-          // -------|---------|
-          // Confirm KVC
-          // -------|---------|
-          boolean kvcResult = confirmKVC( kvcFromDB, KVC_PASSPHRASE, kekFromDB );
+          String kvcFromDB = getValue( kvcDB,    keyIdentifier );
+
+          if( DEBUG ) {
+            System.out.println( "KVC: " + kvcFromDB );
+          }
+
+          boolean kvcResult = confirmKVC( kvcFromDB, KVC_PASSPHRASE, keyEncryptionKey );
           if( kvcResult == false ) {
-            System.out.println( "Key Verification Code comparison failed. Aborting..." );
+            System.out.println( "Key Verification Code confirmation failed. \u001b[31;1m\u001b[4mAborting key decryption.\u001b[0m" );
+            System.out.println();
             continue;
           }
           else {
-            System.out.println( "Key Verification Code comparison success! Decrypting key..." );
+            System.out.println( "\u001b[32;1mKey Verification Code comparison success!\u001b[0m Decrypting key..." );
+            System.out.println();
           }
 
-          // -------|---------|
-          // Decryption of private key
-          // -------|---------|
+          if( DEBUG ) {
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Decrypt encKey.Private" );
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "Acquiring encKey.Private from database... ");
+          }
+          String keyFromDB = getValue( privKeys, keyIdentifier );
           String pvtKey_decrypted = decrypt_AES( keyFromDB, kekFromDB );
+
           if( DEBUG ) {
             System.out.println( "Key decryption attempted. Result: " );
-            System.out.println( pvtKey_decrypted );
+            System.out.println( String.format( "%1$.76s[...]", pvtKey_decrypted ) );
             System.out.println();
           }
 
           // -------|---------|
           // Convert to key object
           // -------|---------|
+          if( DEBUG ) {
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Convert to key object" );
+            System.out.println( "|---------|---------|---------|---------|" );
+          }
           // Decode the base64-encoded string
           byte[] decodedKey = Base64.getDecoder( ).decode( pvtKey_decrypted );
+
           if( DEBUG ) {
             System.out.println( "Base64 Decoded:" );
             for( int i = 0 ; i < 100 ; i++ ) {
               System.out.print( decodedKey[i] );
             }
             System.out.println( "..." );
+            System.out.println();
           }
+
           // For public:
           // PublicKey publicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(bytes));
           // For private:
@@ -690,27 +747,45 @@ public class Main {
             System.out.println( "Private key: " + privateKey.getFormat( ) );
             System.out.println( "  Format: " + privateKey.getFormat( ) );
             System.out.println( "  Value : " + privateKey.getEncoded( ) );
-            System.out.println( "  Base64: " + privateKeyCheck );
+            System.out.println( "  Base64: " + String.format( "%1$.66s[...]", privateKeyCheck ) );
+            System.out.println();
           }
 
-          // -------|---------|
-          // Encrypt plaintext
-          // -------|---------|
+          if( DEBUG ) {
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Acquire Plaintext" );
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "Reading plaintext from file: \u001b[33;1m\u001b[4mplaintext.txt\u001b[0m" );
+          }
+
+          String plaintext = readFile( "plaintext.txt" );
+
+          if( DEBUG ) {
+            System.out.println( "Plaintext received: " );
+            System.out.println( plaintext );
+            System.out.println();
+          }
+
+          if( DEBUG ) {
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Encrypt Plaintext" );
+            System.out.println( "|---------|---------|---------|---------|" );
+          }
+
           //Encrypt with PRIVATE
           String encryptedText = encrypt_RSA( plaintext, privateKey );
           if( DEBUG ) {
-            System.out.println( "Encryption complete: " );
-            System.out.println( "Plaintext: " );
-            System.out.println( plaintext );
-            System.out.println( "Ciphertext: " );
+            System.out.println( "\u001b[32;1mEncryption complete! \u001b[0m" );
             System.out.println( encryptedText );
             System.out.println();
-
           }
 
-          // -------|---------|
-          // Decrypt ciphertext check
-          // -------|---------|
+          if( DEBUG ) {
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Decryption Check (Optional)" );
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "Retrieving Key.Public from database...");
+          }
           // Get public key from DB
           keyFromDB = getValue( pubKeys, keyIdentifier );
           byte[] pubKeySeed = Base64.getDecoder( ).decode( keyFromDB );
@@ -718,67 +793,79 @@ public class Main {
           // Decipher
           String roundtripMessage = decrypt_RSA( encryptedText, publicKey );
           if( DEBUG ) {
-            System.out.println( "Attempting roundtrip..." );
+            System.out.println( "Public key acquired and recreated! Attempting roundtrip..." );
+            System.out.println( "Roundtrip results:" );
             System.out.println( roundtripMessage );
             System.out.println();
-            writeStringToFile( roundtripMessage, "plaintext_roundtrip.txt" );
           }
 
           // -------|---------|
           // Sign the message
           // -------|---------|
-          String signature = sign( SIGNATURE, privateKey );
           if( DEBUG ) {
-            System.out.println( "Signature complete: " + signature );
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| RSA Signing (Optional)" );
+            System.out.println( "|---------|---------|---------|---------|" );
+          }
+          String signature = sign( SIGNATURE, privateKey );
+          boolean isCorrect = verify( SIGNATURE, signature, publicKey );
+
+          if( DEBUG ) {
+            System.out.println( "Signature created: " + String.format( "%1$.5s", signature ) );
             System.out.println();
             System.out.println( "Attempting signature verification ('" + SIGNATURE + "')..." );
-            boolean isCorrect = verify( SIGNATURE, signature, publicKey );
             System.out.println("Signature correct: " + isCorrect);
+            System.out.println();
           }
 
-          System.out.println( "ENCRYPTION COMPLETE:" );
-          System.out.println( "-----BEGIN RSA MESSAGE-----" );
+          if( DEBUG ) {
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Report RSA Results" );
+            System.out.println( "|---------|---------|---------|---------|" );
+          }
+
+          System.out.println( "-----BEGIN RSA MESSAGE-----\u001b[30;1m" );
           System.out.println( encryptedText );
-          System.out.println( "-----END RSA MESSAGE-----" );
+          System.out.println( "\u001b[0m-----END RSA MESSAGE-----" );
           System.out.println();
-          System.out.println( "-----BEGIN RSA SIGNATURE-----" );
+          System.out.println( "-----BEGIN RSA SIGNATURE-----\u001b[30;1m" );
           System.out.println( signature );
-          System.out.println( "-----END RSA SIGNATURE-----" );
+          System.out.println( "\u001b[0m-----END RSA SIGNATURE-----" );
           System.out.println();
+
+          if( DEBUG ) {
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Save Results to File" );
+            System.out.println( "|---------|---------|---------|---------|" );
+          }
 
           // -------|---------|
           // Save cipher to file
           // -------|---------|
-          String fileOutput = null;
-          System.out.print( "Enter ciphertext output filename: " );
-          if( FASTMODE ) {
-            fileOutput = "ciphertext_output.txt";
-            System.out.println( fileOutput );
-            System.out.println();
-          }
-          else {
-            fileOutput = userInput.next();
-            System.out.println();
-          }
+          String fileOutput = "ciphertext_output.txt";
+          System.out.println( "Ciphertext output to: \u001b[33;1m\u001b[4m" + fileOutput + "\u001b[0m");
           writeStringToFile( encryptedText, fileOutput );
-          System.out.println( "Ciphertext written." );
+          System.out.println( "Ciphertext written!" );
           System.out.println();
 
           // -------|---------|
           // Save signature to file
           // -------|---------|
-          System.out.print( "Enter signature output filename: " );
-          if( FASTMODE ) {
-            fileOutput = "signature_output.txt";
-            System.out.println( fileOutput );
-            System.out.println();
-          }
-          else {
-            fileOutput = userInput.next();
-            System.out.println();
-          }
+          fileOutput = "signature_output.txt";
+          System.out.println( "Signature  output to: \u001b[33;1m\u001b[4m" + fileOutput + "\u001b[0m");
           writeStringToFile( signature, fileOutput );
-          System.out.println( "Signature written. End of Encryption Case" );
+          System.out.println( "Signature  written!" );
+          System.out.println();
+
+          // -------|---------|
+          // Save roundtrip to file
+          // -------|---------|
+          System.out.println( "Roundtrip output to: \u001b[33;1m\u001b[4mplaintext_roundtrip.txt\u001b[0m");
+          writeStringToFile( roundtripMessage, "plaintext_roundtrip.txt" );
+          System.out.println( "Roundtrip  written!" );
+          System.out.println();
+
+          System.out.println( "\u001b[32;1m\u001b[4mEncryption and Signing complete!\u001b[0m" );
           System.out.println();
         } // Closing Encryption Case
 
@@ -786,8 +873,11 @@ public class Main {
         // DECRYPT CASE
         // -------|---------|---------|---------|
         else if( choice.equals( "D" ) && LOGGED_IN ) {
+          System.out.println( "---DECRYPT SELECTED---");
+          System.out.println();
           System.out.println( "Decryption with PUBLIC key (e.g. - broadcast from known sender)" );
           System.out.println( "No decryption case per assignment specification." );
+          System.out.println();
         } // Closing Decryption Case
 
 // -------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|-------|
@@ -799,7 +889,9 @@ public class Main {
         // TARE CASE
         // -------|---------|---------|---------|
         else if( choice.equals( "T" ) ) {
-          System.out.println( "Taring. Dumping databases..." );
+          System.out.println( "---TARE SELECTED---");
+          System.out.println();
+          System.out.println( "Taring... \u001b[41m\u001b[33;1m---WARNING!---\u001b[0m Dumping databases \u001b[41m\u001b[33;1m---WARNING!---\u001b[0m" );
           System.out.println();
           CURR_KEYCOUNT = 0;
           obliviate( userDB );
@@ -808,12 +900,15 @@ public class Main {
           obliviate( privKeys );
           obliviate( keyIDs );
           obliviate( kvcDB );
+
         }
 
         // -------|---------|---------|---------|
         // EXIT CASE
         // -------|---------|---------|---------|
         else if( choice.equals( "X" ) ) {
+          System.out.println( "---EXIT SELECTED---");
+          System.out.println();
           isRunning = false;
         }
 
@@ -821,6 +916,8 @@ public class Main {
         // SAVE + EXIT CASE
         // -------|---------|---------|---------|
         else if( choice.equals( "SX" ) ) {
+          System.out.println( "---SAVE AND EXIT SELECTED---");
+          System.out.println();
           System.out.println( "Saving state and exiting..." );
           writeIntToFile( CURR_KEYCOUNT, KEY_COUNT );
           writeToFile( userDB,   USERDB_OUT      );
@@ -838,17 +935,14 @@ public class Main {
         }
       } // Closing SERVER WHILE LOOP
 
+      
+      System.out.println( "vHSM loop complete. Thank you for using the vHSM!" );
       if( DEBUG ) {
-        System.out.println( "Server loop complete. Exiting..." );
+        System.out.println( "Exiting..." );
       }
+      System.out.println();
     } // Closing SERVER ROLE
 
-// -------|---------|---------|---------|
-// CLIENT
-// -------|---------|---------|---------|
-    else if( role.equals( "CLIENT" ) ) {
-      System.out.println( "CLIENT SUITE ACTIVATED" );
-    } // Closing CLIENT ROLE
   } //  Closing Main()
 
 
@@ -904,10 +998,10 @@ public class Main {
   public static String decrypt_RSA(String cipherText, PublicKey publicKey) throws Exception {
     byte[] bytes = Base64.getDecoder().decode(cipherText);
 
-    Cipher decriptCipher = Cipher.getInstance("RSA");
-    decriptCipher.init(Cipher.DECRYPT_MODE, publicKey);
+    Cipher decryptCipher = Cipher.getInstance("RSA");
+    decryptCipher.init(Cipher.DECRYPT_MODE, publicKey);
 
-    return new String(decriptCipher.doFinal(bytes), UTF_8);
+    return new String(decryptCipher.doFinal(bytes), UTF_8);
   } // Closing decrypt_RSA()
 
 //-------|---------|---------|---------|
@@ -917,7 +1011,7 @@ public class Main {
     boolean retbool = true;
     String decryption = decrypt_AES( kvcToConfirm, kek );
     if( DEBUG ) {
-      System.out.println( "KVC Confirmation result: " + decryption );
+      System.out.println( "  [confirmKVC()] - KVC Confirmation result: " + decryption );
     }
     retbool = decryption.equals( tgtval );
     return retbool;
@@ -932,10 +1026,14 @@ public class Main {
       setKey( secret );
       Cipher cipher = Cipher.getInstance( "AES/ECB/PKCS5Padding" );
       cipher.init( Cipher.ENCRYPT_MODE, secretKey );
-      return Base64.getEncoder( ).encodeToString( cipher.doFinal( plaintext.getBytes( "UTF-8" ) ) );
+      String retString = Base64.getEncoder( ).encodeToString( cipher.doFinal( plaintext.getBytes( "UTF-8" ) ) );
+      if( DEBUG ) {
+        System.out.println( String.format( "  [encrypt_AES()] - Result: %1$.50s[...]", retString ) );
+      }
+      return retString;
     } 
     catch( Exception e ) {
-      System.out.println( "Encryption error: " + e.toString( ) );
+      System.out.println( "  [encrypt_AES()] - Encryption error: " + e.toString( ) );
     }
     return null;
   } // Closing encrypt_AES()
@@ -952,7 +1050,7 @@ public class Main {
       return retString;
     } 
     catch( Exception e ) {
-      System.out.println( "Decryption error: " + e.toString( ) );
+      System.out.println( "  [decrypt_AES()] - Decryption error: " + e.toString( ) );
     }
     return null;
   } // Closing decrypt_AES()
@@ -1051,13 +1149,13 @@ public class Main {
     String value = pair[1];
     if( !doesContainKeyValPair( database, key, value ) ) {
       if( DEBUG ) {
-        System.out.println( "Key (" + key + ") : Value (" + value + ") not found. Adding... " );
+        System.out.println( "  [addPair()] - Key (" + key + ") : Value (" + String.format("[%1$.20s]", value) + ") not found. Adding... " );
       }
       database.add( pair );
       return true;
     }
     if( DEBUG ) {
-      System.out.println( "Key (" + key + ") : Value (" + value + ") found. Aborting... " );
+      System.out.println( "  [addPair()] - Key (" + key + ") : Value (" + String.format("[%1$.20s]", value) + ") found. Aborting... " );
     }
     return false;
   } // Closing addPair()
@@ -1073,11 +1171,11 @@ public class Main {
       String[] currEntry = i.next();
       if( currEntry[0].equals( key )) {
         if( DEBUG ) {
-          System.out.println( "Key match found!" );
+          System.out.println( "  [doesContainKeyValPair()] - Key match found!" );
         }
         if( currEntry[1].equals( value ) ) {
           if( DEBUG ) {
-            System.out.println( "Value match found!" );
+            System.out.println( "  [doesContainKeyValPair()] - Value match found!" );
           }
           doesContain = true;
           return doesContain;
@@ -1085,7 +1183,7 @@ public class Main {
       } // Closing key match case
     }
     if( DEBUG ) {
-      System.out.println( "No key:value match found." );
+      System.out.println( "  [doesContainKeyValPair()] - No key:value match found." );
     }
     return doesContain;
   } // Closing doesContainKeyValPair()
@@ -1101,13 +1199,13 @@ public class Main {
       String[] currEntry = i.next();
       if( currEntry[0].equals( key )) {
         if( DEBUG ) {
-          System.out.println( "Key match found!" );
+          System.out.println( "  [doesContainKey()] - Key match found!" );
         }
         return true;
       }
     }
     if( DEBUG ) {
-      System.out.println( "No key match found." );
+      System.out.println( "  [doesContainKey()] - No key match found." );
     }
     return false;
   } // Closing doesContainKey()
@@ -1147,13 +1245,13 @@ public class Main {
       if( currEntry[0].equals( key ) ) {
         retVal = currEntry[1];
         if( DEBUG ) {
-          System.out.println( "Key found! Returning Value: '" + retVal + "'..." );
+          System.out.println( String.format("  [getValue()] - Key found! Returning Value: '%1$.25s...'", retVal ) );
         }
         return retVal;
       }
     }
     if( DEBUG ) {
-      System.out.println( "Key not found. Returning 'NOT_FOUND'." );
+      System.out.println( "  [getValue()] - Key not found. Returning 'NOT_FOUND'." );
     }
     return retVal;
   } // Closing getValue()
@@ -1219,8 +1317,8 @@ public class Main {
       retString += fileReader.nextLine();
     }
     if( DEBUG ) {
-      System.out.println( "Read File: " + filename );
-      System.out.println( "Contents : " );
+      System.out.println( "  [readFile()] - Read File: " + filename );
+      System.out.println( "  [readFile()] - Contents : " );
       System.out.println( retString );
       System.out.println();
     }
@@ -1284,7 +1382,7 @@ public class Main {
     // Ignore: filename is passed in as formal parameter    
     // Check result
     if( DEBUG ) {
-      System.out.println( "Load from file: '" + filename + "'" );
+      System.out.println( "  [loadSecret()]   - Load from file: '" + filename + "'" );
     }
 //-------|---------|
 // STEP 2 - OPEN TARGET FILE
@@ -1342,7 +1440,7 @@ public class Main {
     // Ignore: filename is passed in as formal parameter    
     // Check result
     if( DEBUG ) {
-      System.out.println( "Load from file: '" + filename + "'" );
+      System.out.println( "  [loadFromFile()] - Load from file: '" + filename + "'" );
     }
 //-------|---------|
 // STEP 2 - OPEN TARGET FILE
@@ -1432,7 +1530,7 @@ public class Main {
         System.out.print( "[...]" );
       }
       else {
-        System.out.print( String.format( "%-10s" , currEntry[0] ) );
+        System.out.print( String.format( "%-11s" , currEntry[0] ) );
       }
       System.out.print( " : " );
       if( currEntry[1].length() >= length ) {
