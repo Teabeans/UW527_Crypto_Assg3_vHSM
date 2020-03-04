@@ -143,12 +143,6 @@ public class Main {
       System.out.println( "Improper argument passed (" + args[0] + "). Halting..." );
       System.exit(0);
     }
-    else {
-      if (DEBUG) {
-        System.out.println( "My role is: " + role );
-        System.out.println();
-      }
-    }
 
     if( PERSISTENT ) {
       USERDB_OUT      = USERDB_IN      ;
@@ -194,7 +188,6 @@ public class Main {
 // SERVER
 // -------|---------|---------|---------|
     else if( role.equals( "SERVER" ) ) {
-      System.out.println( "SERVER SUITE ACTIVATED" );
       // Load known information from the databases
       HashSet<String[]> userDB   = loadFromFile( USERDB_IN      );
       HashSet<String[]> idKEKDB  = loadFromFile( KEY_KEKDB_IN   );
@@ -212,7 +205,7 @@ public class Main {
       }
 
       System.out.println();
-      System.out.println( "WELCOME TO THE VIRTUAL HSM:" );
+      System.out.println( "\u001b[37;1mWELCOME TO THE VIRTUAL HSM: \u001b[0m" );
 
       Scanner userInput = new Scanner(System.in);
       boolean isRunning = true;
@@ -226,15 +219,16 @@ public class Main {
         // -------|---------|---------|---------|
         if( choice.equals( "N" ) ) {
           System.out.println( "---NEW USER SELECTED---" );
-          System.out.print( "Enter new username: " );
+          System.out.print( "\u001b[37;1mEnter new username: \u001b[0m" );
           String username = userInput.next();
           // Check if user is already in the database
           if( doesContainKey( userDB, username ) ) {
-            System.out.println( "Username unavailable. Aborting..." );
+            System.out.println( "\u001b[31;1mUsername unavailable\u001b[0m. Aborting..." );
+            System.out.println();
             continue;
           }
           System.out.println( "Username available!" );
-          System.out.print( " Select password: ");
+          System.out.print( "\u001b[37;1mSelect password   : \u001b[0m");
           String password = new String( System.console( ).readPassword( ) );
           String hash = null;
           try {
@@ -244,7 +238,7 @@ public class Main {
             e.printStackTrace(System.out);
           }
           if( DEBUG ) {
-            System.out.println( "Password: " + password + " => " + hash );
+            System.out.println( "Password: " + password + " => [SHA-256] => " + hash );
           }
           System.out.println( "Password accepted! Hashing and saving..." );
           String[] pair = new String[2];
@@ -255,7 +249,7 @@ public class Main {
             System.out.println( "Add result: " + addResult );
             renderHashSet( userDB );
           }
-          System.out.println( "Account '" + username + "' created!" );
+          System.out.println( "\u001b[32;1mAccount '" + username + "' created!\u001b[0m" );
           System.out.println();
         } // Closing new user account case
 
@@ -279,19 +273,19 @@ public class Main {
             e.printStackTrace(System.out);
           }
           if( DEBUG ) {
-            System.out.println( "Password: " + password + " => " + hash );
+            System.out.println( "Password: " + password + " => [SHA-256] => " + hash );
           }
           // -------|---------|
           // Check credentials against database
           // -------|---------|
           if( getValue( userDB, username ).equals( hash ) ) {
-            System.out.println( "Username:Password accepted. Login successful." );
+            System.out.println( "Username:Password accepted. \u001b[32;1mLogin successful\u001b[0m." );
             System.out.println();
             LOGGED_IN = true;
             WHO_AM_I = username;
           }
           else {
-            System.out.println( "Username:Password denied. Logging out." );
+            System.out.println( "Username:Password not found. \u001b[31;1mLogin denied\u001b[0m. Logging out..." );
             System.out.println();
             LOGGED_IN = false;
             WHO_AM_I = null;
@@ -312,28 +306,28 @@ public class Main {
 
           System.out.println();
 
-          System.out.println( "USERS:" );
-          renderHashSetShort( userDB, 20 );
+          System.out.println( "\u001b[33;1mUSER       : PASSWORD HASH \u001b[0m" );
+          renderHashSetShort( userDB, 61 );
           System.out.println();
 
-          System.out.println( "KEY IDS:" );
-          renderHashSetShort( keyIDs, 20 );
+          System.out.println( "\u001b[33;1mOWNER      : KEY ID \u001b[0m" );
+          renderHashSetShort( keyIDs, 62 );
           System.out.println();
 
-          System.out.println( "KEY ENCRYPTION KEYS (KEKS):" );
-          renderHashSetShort( idKEKDB, 20 );
+          System.out.println( "\u001b[33;1mKEY ID     : KEY ENCRYPTION KEY (KEK) \u001b[0m" );
+          renderHashSetShort( idKEKDB, 62 );
           System.out.println();
 
-          System.out.println( "KEY VERIFICATION CODES (KVCS):" );
-          renderHashSetShort( kvcDB, 20 );
+          System.out.println( "\u001b[33;1mKEY ID     : KEY VERIFICATION CODE (KVC) \u001b[0m" );
+          renderHashSetShort( kvcDB, 62 );
           System.out.println();
 
-          System.out.println( "PUBLIC KEYS:" );
-          renderHashSetShort( pubKeys, 20 );
+          System.out.println( "\u001b[33;1mKEY ID     : PUBLIC KEY \u001b[0m" );
+          renderHashSetShort( pubKeys, 62 );
           System.out.println();
 
-          System.out.println( "PRIVATE KEYS:" );
-          renderHashSetShort( privKeys, 20 );
+          System.out.println( "\u001b[33;1mKEY ID     : ENCRYPTED PRIVATE KEY \u001b[0m" );
+          renderHashSetShort( privKeys, 62 );
           System.out.println();
         } // Closing HSM Report case
 
@@ -342,28 +336,42 @@ public class Main {
         // -------|---------|---------|---------|
         else if( choice.equals( "C" ) && LOGGED_IN ) {
           System.out.println( "---CREATE KEY SELECTED---" );
-          // -------|---------|
-          // Generate Key ID number and add to database
-          // -------|---------|
+
+          if( DEBUG ) {
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Generate KeyID" );
+            System.out.println( "|---------|---------|---------|---------|" );
+          }
           // In form: 'USERNAME:KEYNUMBER'
           String keyID = calcKeyID( WHO_AM_I, CURR_KEYCOUNT );
 
           if( DEBUG ) {
-            System.out.println( "KeyID (" + keyID + ") created. Adding to keyID database..." );
+            System.out.println( "KeyID ('" + keyID + "') created." );
+            System.out.println();
           }
-          // -------|---------|
-          // Add ID to list of known keys
-          // -------|---------|
+
+          if( DEBUG ) {
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Add KeyID to database" );
+            System.out.println( "|---------|---------|---------|---------|" );
+          }
+
           String[] userKeyPair = new String[2];
           userKeyPair[0] = WHO_AM_I;
           userKeyPair[1] = keyID;
           addPair( keyIDs, userKeyPair );
-          CURR_KEYCOUNT++;
 
-          // -------|---------|
-          // Acquire key password
-          // -------|---------|
-          System.out.print( "Enter Key Password: " );
+          if( DEBUG ) {
+            System.out.println( "KeyID ('" + keyID + "') added to database." );
+            System.out.println();
+          }
+
+          if( DEBUG ) {
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Acquire Key Password" );
+            System.out.println( "|---------|---------|---------|---------|" );
+          }
+          System.out.print( "\u001b[37;1mEnter Key Password: \u001b[0m" );
           String keypass = null;
           if( FASTMODE ) {
             keypass = "foobarbaz";
@@ -373,15 +381,21 @@ public class Main {
           }
 
           if( DEBUG ) {
-            System.out.println( "Input acquired:" );
+            System.out.println( "Key Password input acquired:" );
             System.out.println( "  USER   : " + WHO_AM_I );
-            System.out.println( "  KEY ID#: " + CURR_KEYCOUNT );
+            System.out.println( "  KEY ID#: " + (CURR_KEYCOUNT) );
             System.out.println( "  PASS   : " + keypass );
+            System.out.println();
           }
 
-          // -------|---------|
-          // RSA generate Public and Private keys
-          // -------|---------|
+          CURR_KEYCOUNT++;
+
+          if( DEBUG ) {
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| RSA generate Public and Private keys" );
+            System.out.println( "|---------|---------|---------|---------|" );
+          }
+
           KeyPair kp = generateKeyPair( keypass );
 
           // KeyPair kp = null;
@@ -394,20 +408,24 @@ public class Main {
           String pvtKey_64 = encoder.encodeToString( pvt.getEncoded( ) );
 
           if( DEBUG ) {
-            System.out.println( "Public key:" );
+            System.out.println( "KEY.PUBLIC result:" );
             System.out.println( "  Format: " + pub.getFormat( ) );
             System.out.println( "  Value : " + pub.getEncoded( ) );
-            System.out.println( "  Base64: " + pubKey_64 );
+            System.out.println( String.format("  Base64: %1$.66s[...]", pubKey_64 ) );
+            System.out.println();
             
-            System.out.println( "Private key: " + pvt.getFormat( ) );
+            System.out.println( "KEY.PRIVATE result:" );
             System.out.println( "  Format: " + pvt.getFormat( ) );
             System.out.println( "  Value : " + pvt.getEncoded( ) );
-            System.out.println( "  Base64: " + pvtKey_64 );
+            System.out.println( String.format("  Base64: %1$.66s[...]", pvtKey_64 ) );
+            System.out.println();
           }
 
-          // -------|---------|
-          // Calculate Key Encryption Key (KEK)
-          // -------|---------|
+          if( DEBUG ) {
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Calculate Key Encryption Key (KEK)" );
+            System.out.println( "|---------|---------|---------|---------|" );
+          }
           // KEK == (HSMSecretKey) XOR (SHA256(KeyPassword))
           String sha256KeyPass = null;
           try {
@@ -418,28 +436,38 @@ public class Main {
           }
 
           if( DEBUG ) {
-            System.out.println( keypass + " => " + sha256KeyPass );
-            System.out.println( "Attempting XOR: " );
-            System.out.println( "  " + sha256KeyPass );
-            System.out.println( "  " + MY_SECRET );
+            System.out.print( String.format( "'%-13s'" , keypass ) );
+            System.out.print( " ===[SHA-256]==> " );
+            System.out.println( String.format( "%1$.44s[...]" , sha256KeyPass ) );
+            System.out.println();
+            System.out.println( "Attempting XOR of: " );
+            System.out.println( "  HSM Secret     : " + MY_SECRET );
+            System.out.println( "  Password Hash  : " + sha256KeyPass );
+            System.out.println();
           }
 
           String keyEncryptionKey = xorHex( sha256KeyPass, MY_SECRET );
 
           if( DEBUG ) {
-            System.out.println( "Hexadecimal XOR Result (KEK): " );
-            System.out.println( "  " + keyEncryptionKey );
+            System.out.println( "XOR Result (KEK): " );
+            System.out.println( "  Key-Encrypt-Key: " + keyEncryptionKey );
             System.out.println();
           }
 
-          // -------|---------|
-          // Store encrypted KEK to server
-          // -------|---------|
           if( DEBUG ) {
-            String[] idAndKEK = new String[2];
-            idAndKEK[0] = keyID; // Key ID
-            idAndKEK[1] = keyEncryptionKey;
-            addPair( idKEKDB, idAndKEK );
+            System.out.println( "|---------|---------|---------|---------|" );
+            System.out.println( "| Store KEK to server" );
+            System.out.println( "|---------|---------|---------|---------|" );
+          }
+
+          String[] idAndKEK = new String[2];
+          idAndKEK[0] = keyID; // Key ID
+          idAndKEK[1] = keyEncryptionKey;
+          addPair( idKEKDB, idAndKEK );
+
+          if( DEBUG ) {
+            System.out.println( "KeyID : KEK stored to database." );
+            System.out.println();
           }
 
           // -------|---------|
@@ -1119,7 +1147,7 @@ public class Main {
       if( currEntry[0].equals( key ) ) {
         retVal = currEntry[1];
         if( DEBUG ) {
-          System.out.println( "Key found. Returning '" + retVal + "'..." );
+          System.out.println( "Key found! Returning Value: '" + retVal + "'..." );
         }
         return retVal;
       }
@@ -1256,7 +1284,7 @@ public class Main {
     // Ignore: filename is passed in as formal parameter    
     // Check result
     if( DEBUG ) {
-      System.out.println( "Filename: '" + filename + "'" );
+      System.out.println( "Load from file: '" + filename + "'" );
     }
 //-------|---------|
 // STEP 2 - OPEN TARGET FILE
@@ -1404,7 +1432,7 @@ public class Main {
         System.out.print( "[...]" );
       }
       else {
-        System.out.print( currEntry[0] );
+        System.out.print( String.format( "%-10s" , currEntry[0] ) );
       }
       System.out.print( " : " );
       if( currEntry[1].length() >= length ) {
@@ -1424,24 +1452,26 @@ public class Main {
 // renderOptions()
 //-------|---------|---------|---------|
   public static void renderOptions() {
-    System.out.println( "OPTIONS -|---------|---------|---------|---------|---------|---------|---------|" );
-    System.out.println( "  N - make a New user account" );
-    System.out.println( "  L - Login" );
-    System.out.println( "  R - Report the contents of the vHSM" );
+    System.out.println( "|----- OPTIONS -----|---------|---------|---------|---------|---------|---------|" );
+    System.out.println( "    \u001b[1mN\u001b[0m  - make a \u001b[4mN\u001b[0mew user account" );
+    System.out.println( "    \u001b[1mL\u001b[0m  - \u001b[4mL\u001b[0mogin" );
+    System.out.println( "    \u001b[1mR\u001b[0m  - \u001b[4mR\u001b[0meport the contents of the vHSM" );
     if( LOGGED_IN ) {
-      System.out.println( "  C - Create Key" );
-      System.out.println( "  E - Encrypt (w/private key)" );
-      System.out.println( "  D - Decrypt (w/public  key)" );
+      System.out.println( "    \u001b[1mC\u001b[0m  - \u001b[4mC\u001b[0mreate Key" );
+      System.out.println( "    \u001b[1mE\u001b[0m  - \u001b[4mE\u001b[0mncrypt (w/private key)" );
+      System.out.println( "    \u001b[1mD\u001b[0m  - \u001b[4mD\u001b[0mecrypt (w/public  key)" );
     }
     else if( !LOGGED_IN ) {
-      System.out.println( "  C - (Unavailable - Please log in) Create Key" );
-      System.out.println( "  E - (Unavailable - Please log in) Encrypt (w/private key)" );
-      System.out.println( "  D - (Unavailable - Please log in) Decrypt (w/public  key)" );
+      System.out.println( "    \u001b[30;1mC  - (Unavailable - Please log in) Create Key \u001b[0m" );
+      System.out.println( "    \u001b[30;1mE  - (Unavailable - Please log in) Encrypt (w/private key) \u001b[0m" );
+      System.out.println( "    \u001b[30;1mD  - (Unavailable - Please log in) Decrypt (w/public  key) \u001b[0m" );
     }
-    System.out.println( "  T - Tare HSM (drop tables)" );
-    System.out.println( "  X - eXit" );
-    System.out.println( "  SX - Save + eXit" );
-    System.out.print( "Please select an option: " );
+    System.out.println( "    \u001b[1mT\u001b[0m  - \u001b[4mT\u001b[0mare HSM (drop tables)" );
+    System.out.println( "    \u001b[1mX\u001b[0m  - e\u001b[4mX\u001b[0mit" );
+    System.out.println( "    \u001b[1mSX\u001b[0m - \u001b[4mS\u001b[0mave + e\u001b[4mX\u001b[0mit" );
+    System.out.println( "|---------|---------|---------|---------|---------|---------|---------|---------|" );
+    System.out.println();
+    System.out.print( "\u001b[37;1mPlease select an option: \u001b[0m" );
   } // Closing renderOptions()
 
 //-------|---------|---------|---------|---------|---------|---------|---------|
