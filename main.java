@@ -223,7 +223,7 @@ public class Main {
           String username = userInput.next();
           // Check if user is already in the database
           if( doesContainKey( userDB, username ) ) {
-            System.out.println( "\u001b[31;1mUsername unavailable\u001b[0m. Aborting..." );
+            System.out.println( "\u001b[31;1m\u001b[4mUsername unavailable.\u001b[0m Aborting..." );
             System.out.println();
             continue;
           }
@@ -877,21 +877,17 @@ public class Main {
           System.out.println();
           System.out.println( "Decryption with PUBLIC key (e.g. - broadcast from known sender)" );
           System.out.println( "No decryption case per assignment specification." );
+          System.out.println( "\u001b[32;1m\u001b[4mDecryption complete!\u001b[0m" );
           System.out.println();
         } // Closing Decryption Case
 
-// -------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|-------|
-//
-// UNDER CONSTRUCTION ! UNDER CONSTRUCTION ! UNDER CONSTRUCTION ! UNDER CONSTRUCTION ! UNDER CONSTRUCTION ! UNDER CONSTRUCTION ! UNDER CONSTRUCTION !
-//
-// -------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|-------|
         // -------|---------|---------|---------|
         // TARE CASE
         // -------|---------|---------|---------|
         else if( choice.equals( "T" ) ) {
           System.out.println( "---TARE SELECTED---");
           System.out.println();
-          System.out.println( "Taring... \u001b[41m\u001b[33;1m---WARNING!---\u001b[0m Dumping databases \u001b[41m\u001b[33;1m---WARNING!---\u001b[0m" );
+          System.out.println( "Taring... \u001b[41m\u001b[33;1m---WARNING!---\u001b[0m \u001b[31;1m\u001b[4mDatabases dumped!\u001b[0m \u001b[41m\u001b[33;1m---WARNING!---\u001b[0m" );
           System.out.println();
           CURR_KEYCOUNT = 0;
           obliviate( userDB );
@@ -900,7 +896,29 @@ public class Main {
           obliviate( privKeys );
           obliviate( keyIDs );
           obliviate( kvcDB );
+        }
 
+        // -------|---------|---------|---------|
+        // TARE CASE
+        // -------|---------|---------|---------|
+        else if( choice.equals( "V" ) ) {
+          System.out.println( "---VERBOSITY TOGGLE SELECTED---");
+          System.out.println();
+          if( !DEBUG ) {
+            System.out.println( "Toggling verbosity (DEBUG)..." );
+          }
+          DEBUG = !DEBUG;
+
+          System.out.println( "\u001b[33;1mVerbosity :\u001b[0m " + DEBUG );
+          System.out.println( "\u001b[32;1m\u001b[4mVerbosity toggled!\u001b[0m" );
+          System.out.println();
+
+
+// -------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|-------|
+//
+// UNDER CONSTRUCTION ! UNDER CONSTRUCTION ! UNDER CONSTRUCTION ! UNDER CONSTRUCTION ! UNDER CONSTRUCTION ! UNDER CONSTRUCTION ! UNDER CONSTRUCTION !
+//
+// -------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|-------|
         }
 
         // -------|---------|---------|---------|
@@ -1010,10 +1028,12 @@ public class Main {
   public static boolean confirmKVC( String kvcToConfirm, String tgtval, String kek ) {
     boolean retbool = true;
     String decryption = decrypt_AES( kvcToConfirm, kek );
+
+    retbool = tgtval.equals( decryption );
     if( DEBUG ) {
       System.out.println( "  [confirmKVC()] - KVC Confirmation result: " + decryption );
+      System.out.println( "  [confirmKVC()] - Return boolean: " + retbool );
     }
-    retbool = decryption.equals( tgtval );
     return retbool;
   } // Closing confirmKVC()
 
@@ -1565,6 +1585,7 @@ public class Main {
       System.out.println( "    \u001b[30;1mD  - (Unavailable - Please log in) Decrypt (w/public  key) \u001b[0m" );
     }
     System.out.println( "    \u001b[1mT\u001b[0m  - \u001b[4mT\u001b[0mare HSM (drop tables)" );
+    System.out.println( "    \u001b[1mV\u001b[0m  - \u001b[4mV\u001b[0merbosity (toggle)" );
     System.out.println( "    \u001b[1mX\u001b[0m  - e\u001b[4mX\u001b[0mit" );
     System.out.println( "    \u001b[1mSX\u001b[0m - \u001b[4mS\u001b[0mave + e\u001b[4mX\u001b[0mit" );
     System.out.println( "|---------|---------|---------|---------|---------|---------|---------|---------|" );
