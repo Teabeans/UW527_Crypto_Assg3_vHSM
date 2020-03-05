@@ -219,6 +219,7 @@ public class Main {
         // -------|---------|---------|---------|
         if( choice.equals( "N" ) ) {
           System.out.println( "---NEW USER SELECTED---" );
+          System.out.println();
           System.out.print( "\u001b[37;1mEnter new username: \u001b[0m" );
           String username = userInput.next();
           // Check if user is already in the database
@@ -227,7 +228,9 @@ public class Main {
             System.out.println();
             continue;
           }
-          System.out.println( "Username available!" );
+          System.out.println();
+          System.out.println( "\u001b[32;1mUsername available!\u001b[0m" );
+          System.out.println();
           System.out.print( "\u001b[37;1mSelect password   : \u001b[0m");
           String password = new String( System.console( ).readPassword( ) );
           String hash = null;
@@ -240,7 +243,9 @@ public class Main {
           if( DEBUG ) {
             System.out.println( "Password: " + password + " => [SHA-256] => " + hash );
           }
-          System.out.println( "Password accepted! Hashing and saving..." );
+          System.out.println();
+          System.out.println( "\u001b[32;1mPassword accepted!\u001b[0m Hashing and saving..." );
+          System.out.println();
           String[] pair = new String[2];
           pair[0] = username;
           pair[1] = hash;
@@ -258,9 +263,10 @@ public class Main {
         // -------|---------|---------|---------|
         else if( choice.equals( "L" ) ) {
           System.out.println( "---LOGIN SELECTED---" );
-          System.out.print( "Enter username: " );
+          System.out.println();
+          System.out.print( "\u001b[37;1mEnter username: \u001b[0m" );
           String username = userInput.next();
-          System.out.print( "Enter password: " );
+          System.out.print( "\u001b[37;1mEnter password: \u001b[0m" );
           String password = new String( System.console( ).readPassword( ) );
           System.out.println();
 
@@ -691,12 +697,12 @@ public class Main {
 
           boolean kvcResult = confirmKVC( kvcFromDB, KVC_PASSPHRASE, keyEncryptionKey );
           if( kvcResult == false ) {
-            System.out.println( "Key Verification Code confirmation failed. \u001b[31;1m\u001b[4mAborting key decryption.\u001b[0m" );
+            System.out.println( "\u001b[31;1m\u001b[4mKey Verification Code confirmation failed.\u001b[0m Aborting key decryption..." );
             System.out.println();
             continue;
           }
           else {
-            System.out.println( "\u001b[32;1mKey Verification Code comparison success!\u001b[0m Decrypting key..." );
+            System.out.println( "\u001b[32;1mKey Verification Code comparison success!\u001b[0m Continuing encryption..." );
             System.out.println();
           }
 
@@ -824,6 +830,10 @@ public class Main {
             System.out.println( "|---------|---------|---------|---------|" );
           }
 
+          System.out.println( "-----BEGIN PLAINTEXT MESSAGE-----\u001b[30;1m" );
+          System.out.println( plaintext );
+          System.out.println( "\u001b[0m-----END PLAINTEXT MESSAGE-----" );
+          System.out.println();
           System.out.println( "-----BEGIN RSA MESSAGE-----\u001b[30;1m" );
           System.out.println( encryptedText );
           System.out.println( "\u001b[0m-----END RSA MESSAGE-----" );
@@ -860,7 +870,7 @@ public class Main {
           // -------|---------|
           // Save roundtrip to file
           // -------|---------|
-          System.out.println( "Roundtrip output to: \u001b[33;1m\u001b[4mplaintext_roundtrip.txt\u001b[0m");
+          System.out.println( "Roundtrip  output to: \u001b[33;1m\u001b[4mplaintext_roundtrip.txt\u001b[0m");
           writeStringToFile( roundtripMessage, "plaintext_roundtrip.txt" );
           System.out.println( "Roundtrip  written!" );
           System.out.println();
@@ -910,6 +920,7 @@ public class Main {
           DEBUG = !DEBUG;
 
           System.out.println( "\u001b[33;1mVerbosity :\u001b[0m " + DEBUG );
+          System.out.println();
           System.out.println( "\u001b[32;1m\u001b[4mVerbosity toggled!\u001b[0m" );
           System.out.println();
 
@@ -1570,25 +1581,28 @@ public class Main {
 // renderOptions()
 //-------|---------|---------|---------|
   public static void renderOptions() {
-    System.out.println( "|----- OPTIONS -----|---------|---------|---------|---------|---------|---------|" );
-    System.out.println( "    \u001b[1mN\u001b[0m  - make a \u001b[4mN\u001b[0mew user account" );
-    System.out.println( "    \u001b[1mL\u001b[0m  - \u001b[4mL\u001b[0mogin" );
-    System.out.println( "    \u001b[1mR\u001b[0m  - \u001b[4mR\u001b[0meport the contents of the vHSM" );
+    long delay = 10;
+    System.out.println( "+-------------------------------------------------------------------------------+" );
+    System.out.println( "|   OPTIONS                                                                     |" );
+    System.out.println( "+-------------------------------------------------------------------------------+" );
+    System.out.println( "|   \u001b[1mN\u001b[0m  - make a \u001b[4mN\u001b[0mew user account                                                |" );
+    System.out.println( "|   \u001b[1mL\u001b[0m  - \u001b[4mL\u001b[0mogin                                                                  |" );
+    System.out.println( "|   \u001b[1mR\u001b[0m  - \u001b[4mR\u001b[0meport the contents of the vHSM                                        |" );
     if( LOGGED_IN ) {
-      System.out.println( "    \u001b[1mC\u001b[0m  - \u001b[4mC\u001b[0mreate Key" );
-      System.out.println( "    \u001b[1mE\u001b[0m  - \u001b[4mE\u001b[0mncrypt (w/private key)" );
-      System.out.println( "    \u001b[1mD\u001b[0m  - \u001b[4mD\u001b[0mecrypt (w/public  key)" );
+      System.out.println( "|   \u001b[1mC\u001b[0m  - \u001b[4mC\u001b[0mreate Key                                                             |" );
+      System.out.println( "|   \u001b[1mE\u001b[0m  - \u001b[4mE\u001b[0mncrypt (w/private key)                                                |" );
+      System.out.println( "|   \u001b[1mD\u001b[0m  - \u001b[4mD\u001b[0mecrypt (w/public  key)                                                |" );
     }
     else if( !LOGGED_IN ) {
-      System.out.println( "    \u001b[30;1mC  - (Unavailable - Please log in) Create Key \u001b[0m" );
-      System.out.println( "    \u001b[30;1mE  - (Unavailable - Please log in) Encrypt (w/private key) \u001b[0m" );
-      System.out.println( "    \u001b[30;1mD  - (Unavailable - Please log in) Decrypt (w/public  key) \u001b[0m" );
+      System.out.println( "|   \u001b[30;1mC  - (Unavailable - Please log in) Create Key \u001b[0m                              |" );
+      System.out.println( "|   \u001b[30;1mE  - (Unavailable - Please log in) Encrypt (w/private key) \u001b[0m                 |" );
+      System.out.println( "|   \u001b[30;1mD  - (Unavailable - Please log in) Decrypt (w/public  key) \u001b[0m                 |" );
     }
-    System.out.println( "    \u001b[1mT\u001b[0m  - \u001b[4mT\u001b[0mare HSM (drop tables)" );
-    System.out.println( "    \u001b[1mV\u001b[0m  - \u001b[4mV\u001b[0merbosity (toggle)" );
-    System.out.println( "    \u001b[1mX\u001b[0m  - e\u001b[4mX\u001b[0mit" );
-    System.out.println( "    \u001b[1mSX\u001b[0m - \u001b[4mS\u001b[0mave + e\u001b[4mX\u001b[0mit" );
-    System.out.println( "|---------|---------|---------|---------|---------|---------|---------|---------|" );
+    System.out.println( "|   \u001b[1mT\u001b[0m  - \u001b[4mT\u001b[0mare HSM (drop tables)                                                 |" );
+    System.out.println( "|   \u001b[1mV\u001b[0m  - \u001b[4mV\u001b[0merbosity (toggle)                                                     |" );
+    System.out.println( "|   \u001b[1mX\u001b[0m  - e\u001b[4mX\u001b[0mit                                                                   |" );
+    System.out.println( "|   \u001b[1mSX\u001b[0m - \u001b[4mS\u001b[0mave + e\u001b[4mX\u001b[0mit                                                            |" );
+    System.out.println( "+-------------------------------------------------------------------------------+" );
     System.out.println();
     System.out.print( "\u001b[37;1mPlease select an option: \u001b[0m" );
   } // Closing renderOptions()
