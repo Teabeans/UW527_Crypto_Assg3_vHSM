@@ -101,7 +101,7 @@ public class Main {
 //
 // -------|---------|---------|---------|---------|---------|---------|---------|
 
-  static boolean DEBUG      = false;
+  static boolean DEBUG      = true;
   static boolean FASTMODE   = false;
   static boolean LOGGED_IN  = false;
   static boolean PERSISTENT = true;
@@ -327,10 +327,6 @@ public class Main {
 
           System.out.println( "\u001b[33;1mOWNER       : KEY ID \u001b[0m" );
           renderHashSetShort( keyIDs, 61 );
-          System.out.println();
-
-          System.out.println( "\u001b[33;1mKEY ID      : KEY ENCRYPTION KEY (KEK) \u001b[0m" );
-          renderHashSetShort( idKEKDB, 61 );
           System.out.println();
 
           System.out.println( "\u001b[33;1mKEY ID      : KEY VERIFICATION CODE (KVC) \u001b[0m" );
